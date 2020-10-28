@@ -34,16 +34,19 @@ int R4 = D8;
 //Botoes
 int Btn1 = D4;
 
-//Tempos de acionamento
-int tempo1 = 900000;
-int tempo2 = 900000;
-int tempo3 = 900000;
-int tempo4 = 900000;
+//Tempos de acionamento dos Relés
+// 600.000 milissegundos = 10minutos 
+int tempo1 = 15000;
+int tempo2 = 15000;
+int tempo3 = 15000;
+int tempo4 = 15000;
 
 //Hora de Acionamento
 
-const int rows  = 1;;
-int horaDeLigar[rows][2] = {{10, 30}};
+const int rows  = 3;;
+//int horaDeLigar[rows][2] = {{10, 30}};
+int horaDeLigar[rows][2] = {{12, 45}, {12, 50}, {12, 55}};
+
 
 //Outros
 
@@ -105,9 +108,8 @@ void setup() {
 }
 
 void loop() {
-  //Serial.println("-----------------------------------------------");
   DateTime now = rtc.now();
-  printRelogio(now);
+  printRelogio();
   sensorDht11();
   sensorChuva();
   
@@ -117,6 +119,7 @@ void loop() {
     //Serial.print(" Ta Chovendo ");
     if(tempoDeChuva >= tempoJaMolho){
       //Serial.println("Não vai mais irrigar hoje");
+      Auto          = false;
       tempoDeChuva  = 0; 
       choveu        = true;
       diaAnterior   = now.day();
@@ -134,26 +137,26 @@ void loop() {
       digitalWrite(R2, LOW);
       digitalWrite(R3, LOW);
       digitalWrite(R4, LOW);
-      Rele1 = true;
-      Rele2 = true;
-      Rele3 = true;
-      Rele4 = true;
+      Rele1 =          true;
+      Rele2 =          true;
+      Rele3 =          true;
+      Rele4 =          true;
     }else{
       digitalWrite(R1, HIGH);
       digitalWrite(R2, HIGH);
       digitalWrite(R3, HIGH);
       digitalWrite(R4, HIGH);
-      Rele1 = false;
-      Rele2 = false;
-      Rele3 = false;
-      Rele4 = false;
+      Rele1 =          false;
+      Rele2 =          false;
+      Rele3 =          false;
+      Rele4 =          false;
       
       if(!choveu){
         irrigacaoAuto();
       }else{
-        Auto = false;
         if  ((diaAnterior != now.day() and now.hour() == 12) or 
-            (dht.readHumidity() < 50.00 and dht.readTemperature() > 35.00 )){
+            //(dht.readHumidity() < 50.00 and dht.readTemperature() > 35.00 )){
+            (dht.readHumidity() > 40.00 and dht.readTemperature() > 20.00 )){
           //Serial.print(" choveu Desligado ");
           choveu = false;
           tempoDeChuva = 0;
@@ -192,44 +195,55 @@ int irrigacaoAuto(){
   //Para cada item na lista testar se é igual a agora
 
   for ( int i = 0; i < rows; ++i ){
-    //Serial.print(horaDeLigar[i][0]);
-    //Serial.print(":");
-    //Serial.println(horaDeLigar[i][1]);
-  
+    //Verifica se a hora e minuto atual for igual a algum na lista  
     if(now.hour() == horaDeLigar[i][0] and now.minute() == horaDeLigar[i][1]){
-      digitalWrite(R1, LOW);
-      Rele1 = true;
-      //Serial.println("R1 Ligado");
-      delay(tempo1); 
-      Rele1 = false;                   
-      digitalWrite(R1, HIGH); 
-      //Serial.println("R1 Desligado"); 
-      delay(1000); 
-      digitalWrite(R2, LOW);
-      Rele2 = true;
-      //Serial.println("R2 Ligado");
-      delay(tempo2);                      
-      digitalWrite(R2, HIGH); 
-      Rele2 = false;
-      //Serial.println("R2 Desligado");  
-      delay(1000);
-      digitalWrite(R3, LOW);
-      Rele3 = true;
-      //Serial.println("R3 Ligado");
-      delay(tempo3);                      
-      digitalWrite(R3, HIGH);
-      Rele3 = false;  
-      //Serial.println("R3 Desligado"); 
-      delay(1000);
-      digitalWrite(R4, LOW);
-      Rele4 = true;
-      //Serial.println("R4 Ligado");
-      delay(tempo4);                      
-      digitalWrite(R4, HIGH);
-      Rele4 = false; 
-      //Serial.println("R4 Desligado");  
+      ligaReles();
     }
   }
+}
+
+//Liga os Reles 1 de cada vez com duração individual 
+int ligaReles(){
+  Serial.println("");
+  digitalWrite(R1, LOW);
+  Rele1 = true;
+  printRelogio();
+  Serial.println(" R1 Ligado");
+  delay(tempo1); 
+  Rele1 = false;                   
+  digitalWrite(R1, HIGH);
+  printRelogio(); 
+  Serial.println(" R1 Desligado"); 
+  delay(1000); 
+  digitalWrite(R2, LOW);
+  Rele2 = true;
+  printRelogio();
+  Serial.println(" R2 Ligado");
+  delay(tempo2);                      
+  digitalWrite(R2, HIGH); 
+  Rele2 = false;
+  printRelogio();
+  Serial.println(" R2 Desligado");  
+  delay(1000);
+  digitalWrite(R3, LOW);
+  Rele3 = true;
+  printRelogio();
+  Serial.println(" R3 Ligado");
+  delay(tempo3);                      
+  digitalWrite(R3, HIGH);
+  Rele3 = false;  
+  printRelogio();
+  Serial.println(" R3 Desligado"); 
+  delay(1000);
+  digitalWrite(R4, LOW);
+  Rele4 = true;
+  printRelogio();
+  Serial.println(" R4 Ligado");
+  delay(tempo4);                      
+  digitalWrite(R4, HIGH);
+  Rele4 = false; 
+  printRelogio();
+  Serial.println(" R4 Desligado");
 }
 
 int sensorChuva(){
@@ -267,7 +281,8 @@ int sensorDht11(){
   Serial.print(" "); 
 }
 
-int printRelogio(DateTime now){
+int printRelogio(){
+    DateTime now = rtc.now();
     //Serial.print("Data: "); //IMPRIME O TEXTO NO MONITOR SERIAL
     Serial.print(now.day(), DEC); //IMPRIME NO MONITOR SERIAL O DIA
     Serial.print('/'); //IMPRIME O CARACTERE NO MONITOR SERIAL

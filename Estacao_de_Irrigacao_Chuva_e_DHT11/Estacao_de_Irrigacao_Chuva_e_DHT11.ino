@@ -36,23 +36,22 @@ int Btn1 = D4;
 
 //Tempos de acionamento dos Relés
 // 600.000 milissegundos = 10minutos 
-int tempo1 = 15000;
-int tempo2 = 15000;
-int tempo3 = 15000;
-int tempo4 = 15000;
+int tempo1 = 600000;
+int tempo2 = 600000;
+int tempo3 = 600000;
+int tempo4 = 600000;
 
 //Hora de Acionamento
 
-const int rows  = 3;;
-//int horaDeLigar[rows][2] = {{10, 30}};
-int horaDeLigar[rows][2] = {{12, 45}, {12, 50}, {12, 55}};
+const int rows  = 1;;
+int horaDeLigar[rows][2] = {{10, 30}};
 
 
 //Outros
 
 //int timeAcionamento = 10;
 
-int tempoJaMolho = 30;//900;
+int tempoJaMolho = 900;
 int tempoDeChuva = 0;
 boolean chuva = false;
 boolean choveu = false;
@@ -155,8 +154,8 @@ void loop() {
         irrigacaoAuto();
       }else{
         if  ((diaAnterior != now.day() and now.hour() == 12) or 
-            //(dht.readHumidity() < 50.00 and dht.readTemperature() > 35.00 )){
-            (dht.readHumidity() > 40.00 and dht.readTemperature() > 20.00 )){
+            (dht.readHumidity() < 50.00 and dht.readTemperature() > 35.00 )){
+            //(dht.readHumidity() > 40.00 and dht.readTemperature() > 20.00 )){
           //Serial.print(" choveu Desligado ");
           choveu = false;
           tempoDeChuva = 0;
